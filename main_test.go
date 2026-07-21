@@ -30,7 +30,7 @@ func TestBuscaCEP(t *testing.T) {
 		w.Write([]byte(`{"cep":"80010-000","localidade":"Curitiba","uf":"PR"}`))
 	})
 
-	address, err := BuscaCEP(context.Background(), "80010000", *client)
+	address, err := BuscaCEP(context.Background(), *client, "80010000")
 	if err != nil {
 		t.Fatalf("expected no error, got: %v", err)
 	}
@@ -67,7 +67,7 @@ func TestBuscaCEP_StatusNotOK(t *testing.T) {
 		w.WriteHeader(http.StatusInternalServerError)
 	})
 
-	_, err := BuscaCEP(context.Background(), "80010000", *client)
+	_, err := BuscaCEP(context.Background(), *client, "80010000")
 	if err == nil {
 		t.Fatal("expected an error for non-200 status, got nil")
 	}
@@ -79,7 +79,7 @@ func TestBuscaCEP_InvalidJSON(t *testing.T) {
 		w.Write([]byte(`{not a valid json`))
 	})
 
-	_, err := BuscaCEP(context.Background(), "80010000", *client)
+	_, err := BuscaCEP(context.Background(), *client, "80010000")
 	if err == nil {
 		t.Fatal("expected a decode error for invalid JSON, got nil")
 	}
@@ -93,7 +93,7 @@ func TestBuscaCEP_CanceledContext(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
-	_, err := BuscaCEP(ctx, "80010000", *client)
+	_, err := BuscaCEP(ctx, *client, "80010000")
 	if err == nil {
 		t.Fatal("expected an error for a canceled context, got nil")
 	}

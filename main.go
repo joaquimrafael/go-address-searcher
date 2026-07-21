@@ -49,7 +49,7 @@ type result struct {
 	err  error
 }
 
-func cepClient(ctx context.Context, url string, client http.Client) (Address, error) {
+func cepClient(ctx context.Context, client http.Client, url string) (Address, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return Address{}, fmt.Errorf("failed to create request: %v", err)
@@ -75,9 +75,9 @@ func cepClient(ctx context.Context, url string, client http.Client) (Address, er
 	return address, nil
 }
 
-func BuscaCEP(ctx context.Context, cep string, client http.Client) (Address, error) {
+func BuscaCEP(ctx context.Context, client http.Client, cep string) (Address, error) {
 	url := urlViaCep + cep + "/json/"
-	address, err := cepClient(ctx, url, client)
+	address, err := cepClient(ctx, client, url)
 	if err != nil {
 		return Address{}, fmt.Errorf("failed to search cep %s: %w", cep, err)
 	}
@@ -94,7 +94,7 @@ func BuscaVarios(ctx context.Context, client http.Client, ceps []string) ([]Addr
 
 	for _, v := range ceps {
 		wg.Go(func() {
-			address, err := BuscaCEP(ctx, v, client)
+			address, err := BuscaCEP(ctx, client, v)
 
 			select {
 			case results <- result{address, err}:
