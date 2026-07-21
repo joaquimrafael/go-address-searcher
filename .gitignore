@@ -1,0 +1,29 @@
+# Binaries
+go-address-searcher
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary / coverage
+*.test
+*.out
+coverage.*
+
+# Go workspace
+go.work
+go.work.sum
+
+# Dependency vendoring
+/vendor/
+
+# Env / secrets
+.env
+.env.local
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
+*.swp
