@@ -91,9 +91,7 @@ func BuscaVarios(ctx context.Context, client http.Client, ceps []string) ([]Addr
 	defer cancel()
 
 	for _, v := range ceps {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			address, err := BuscaCEP(ctx, v, client)
 
 			select {
@@ -101,7 +99,7 @@ func BuscaVarios(ctx context.Context, client http.Client, ceps []string) ([]Addr
 			case <-ctx.Done():
 				return
 			}
-		}()
+		})
 	}
 
 	go func() {
