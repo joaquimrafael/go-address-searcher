@@ -41,8 +41,8 @@ func (a Address) Print() {
 	fmt.Printf("Parameter: Siafi, Value: %s\n", a.Siafi)
 }
 
-func cepClient(url string, client http.Client) (Address, error) {
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+func cepClient(ctx context.Context, url string, client http.Client) (Address, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return Address{}, fmt.Errorf("failed to create request: %v", err)
 	}
@@ -67,9 +67,9 @@ func cepClient(url string, client http.Client) (Address, error) {
 	return address, nil
 }
 
-func BuscaCEP(cep string, client http.Client) (Address, error) {
+func BuscaCEP(ctx context.Context, cep string, client http.Client) (Address, error) {
 	url := "https://viacep.com.br/ws/" + cep + "/json/"
-	address, err := cepClient(url, client)
+	address, err := cepClient(ctx, url, client)
 	if err != nil {
 		return Address{}, fmt.Errorf("failed to search cep %s: %w", cep, err)
 	}
@@ -78,13 +78,15 @@ func BuscaCEP(cep string, client http.Client) (Address, error) {
 }
 
 func BuscaVarios(ctx context.Context, client http.Client, ceps []string) ([]Address, error) {
-	addresses := make([]Address, 0, len(ceps))
+	addresses := make(chan Address)
 	for _, v := range ceps {
-		address, err := BuscaCEP(v, client)
-		if err != nil {
-			return addresses, err
+		go func ()  {
+			address, err := BuscaCEP(ctx, v, client)
+			if err != nil {
+				return addresses, err
+			}
+			addresses = append(addresses, address)
 		}
-		addresses = append(addresses, address)
 	}
 	return addresses, nil
 }
@@ -94,13 +96,15 @@ func main() {
 		Timeout: 10 * time.Second,
 	}
 
-	address, err := BuscaCEP("01001000", *client)
+	ctx := context.Background()
+
+	address, err := BuscaCEP(ctx, "01001000", *client)
 	if err != nil {
 		log.Fatalf("Error: %s", err.Error())
 	}
 	address.Print()
 
-	addresses, err := BuscaVarios(context.TODO(), *client, []string{"08780170", "08710190"})
+	addresses, err := BuscaVarios(ctx, *client, []string{"08780170", "08710190"})
 	if err != nil {
 		log.Fatalf("Error: %s", err.Error())
 	}
