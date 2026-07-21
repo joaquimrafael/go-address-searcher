@@ -27,19 +27,19 @@ type Address struct {
 }
 
 func (a Address) Print() {
-	fmt.Printf("Parameter: Cep, Value: %s\n", a.Cep)
-	fmt.Printf("Parameter: Logradouro, Value: %s\n", a.Logradouro)
-	fmt.Printf("Parameter: Complemento, Value: %s\n", a.Complemento)
-	fmt.Printf("Parameter: Unidade, Value: %s\n", a.Unidade)
-	fmt.Printf("Parameter: Bairro, Value: %s\n", a.Bairro)
-	fmt.Printf("Parameter: Localidade, Value: %s\n", a.Localidade)
-	fmt.Printf("Parameter: Uf, Value: %s\n", a.Uf)
-	fmt.Printf("Parameter: Estado, Value: %s\n", a.Estado)
-	fmt.Printf("Parameter: Regiao, Value: %s\n", a.Regiao)
-	fmt.Printf("Parameter: IBGE, Value: %s\n", a.IBGE)
-	fmt.Printf("Parameter: Gia, Value: %s\n", a.Gia)
-	fmt.Printf("Parameter: DDD, Value: %s\n", a.DDD)
-	fmt.Printf("Parameter: Siafi, Value: %s\n", a.Siafi)
+	fmt.Printf("Cep: %s\n", a.Cep)
+	fmt.Printf("Logradouro: %s\n", a.Logradouro)
+	fmt.Printf("Complemento: %s\n", a.Complemento)
+	fmt.Printf("Unidade: %s\n", a.Unidade)
+	fmt.Printf("Bairro: %s\n", a.Bairro)
+	fmt.Printf("Localidade: %s\n", a.Localidade)
+	fmt.Printf("Uf: %s\n", a.Uf)
+	fmt.Printf("Estado: %s\n", a.Estado)
+	fmt.Printf("Regiao: %s\n", a.Regiao)
+	fmt.Printf("IBGE: %s\n", a.IBGE)
+	fmt.Printf("Gia: %s\n", a.Gia)
+	fmt.Printf("DDD: %s\n", a.DDD)
+	fmt.Printf("Siafi: %s\n", a.Siafi)
 }
 
 type result struct {
