@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+var urlViaCep = "https://viacep.com.br/ws/"
+
 type Address struct {
 	Cep         string `json:"cep"`
 	Logradouro  string `json:"logradouro"`
@@ -74,7 +76,7 @@ func cepClient(ctx context.Context, url string, client http.Client) (Address, er
 }
 
 func BuscaCEP(ctx context.Context, cep string, client http.Client) (Address, error) {
-	url := "https://viacep.com.br/ws/" + cep + "/json/"
+	url := urlViaCep + cep + "/json/"
 	address, err := cepClient(ctx, url, client)
 	if err != nil {
 		return Address{}, fmt.Errorf("failed to search cep %s: %w", cep, err)
