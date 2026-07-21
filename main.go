@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"sync"
 	"time"
 )
 
@@ -39,6 +40,11 @@ func (a Address) Print() {
 	fmt.Printf("Parameter: Gia, Value: %s\n", a.Gia)
 	fmt.Printf("Parameter: DDD, Value: %s\n", a.DDD)
 	fmt.Printf("Parameter: Siafi, Value: %s\n", a.Siafi)
+}
+
+type result struct {
+	addr Address
+	err  error
 }
 
 func cepClient(ctx context.Context, url string, client http.Client) (Address, error) {
@@ -78,17 +84,41 @@ func BuscaCEP(ctx context.Context, cep string, client http.Client) (Address, err
 }
 
 func BuscaVarios(ctx context.Context, client http.Client, ceps []string) ([]Address, error) {
-	addresses := make(chan Address)
+	results := make(chan result)
+	var wg sync.WaitGroup
+
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
 	for _, v := range ceps {
-		go func ()  {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
 			address, err := BuscaCEP(ctx, v, client)
-			if err != nil {
-				return addresses, err
+
+			select {
+			case results <- result{address, err}:
+			case <-ctx.Done():
+				return
 			}
-			addresses = append(addresses, address)
-		}
+		}()
 	}
-	return addresses, nil
+
+	go func() {
+		wg.Wait()
+		close(results)
+	}()
+
+	out := []Address{}
+	for a := range results {
+		if a.err != nil {
+			cancel()
+			return out, a.err
+		}
+		out = append(out, a.addr)
+	}
+
+	return out, nil
 }
 
 func main() {
@@ -98,18 +128,10 @@ func main() {
 
 	ctx := context.Background()
 
-	address, err := BuscaCEP(ctx, "01001000", *client)
+	addresses, err := BuscaVarios(ctx, *client, []string{"08780170", "08710190", "01310100", "20040030", "40026010", "80010000", "69005070"})
 	if err != nil {
 		log.Fatalf("Error: %s", err.Error())
 	}
-	address.Print()
-
-	addresses, err := BuscaVarios(ctx, *client, []string{"08780170", "08710190"})
-	if err != nil {
-		log.Fatalf("Error: %s", err.Error())
-	}
-
-	fmt.Println()
 
 	for _, v := range addresses {
 		v.Print()
