@@ -25,11 +25,23 @@ type Address struct {
 	Siafi       string `json:"siafi"`
 }
 
-func cepClient(url string) (Address, error) {
-	client := &http.Client{
-		Timeout: 10 * time.Second,
-	}
+func (a Address) Print() {
+	fmt.Printf("Parameter: Cep, Value: %s\n", a.Cep)
+	fmt.Printf("Parameter: Logradouro, Value: %s\n", a.Logradouro)
+	fmt.Printf("Parameter: Complemento, Value: %s\n", a.Complemento)
+	fmt.Printf("Parameter: Unidade, Value: %s\n", a.Unidade)
+	fmt.Printf("Parameter: Bairro, Value: %s\n", a.Bairro)
+	fmt.Printf("Parameter: Localidade, Value: %s\n", a.Localidade)
+	fmt.Printf("Parameter: Uf, Value: %s\n", a.Uf)
+	fmt.Printf("Parameter: Estado, Value: %s\n", a.Estado)
+	fmt.Printf("Parameter: Regiao, Value: %s\n", a.Regiao)
+	fmt.Printf("Parameter: IBGE, Value: %s\n", a.IBGE)
+	fmt.Printf("Parameter: Gia, Value: %s\n", a.Gia)
+	fmt.Printf("Parameter: DDD, Value: %s\n", a.DDD)
+	fmt.Printf("Parameter: Siafi, Value: %s\n", a.Siafi)
+}
 
+func cepClient(url string, client http.Client) (Address, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return Address{}, fmt.Errorf("failed to create request: %v", err)
@@ -55,9 +67,9 @@ func cepClient(url string) (Address, error) {
 	return address, nil
 }
 
-func BuscaCEP(cep string) (Address, error) {
+func BuscaCEP(cep string, client http.Client) (Address, error) {
 	url := "https://viacep.com.br/ws/" + cep + "/json/"
-	address, err := cepClient(url)
+	address, err := cepClient(url, client)
 	if err != nil {
 		return Address{}, fmt.Errorf("failed to search cep %s: %w", cep, err)
 	}
@@ -65,10 +77,10 @@ func BuscaCEP(cep string) (Address, error) {
 	return address, nil
 }
 
-func BuscaVarios(ctx context.Context, ceps []string) ([]Address, error) {
+func BuscaVarios(ctx context.Context, client http.Client, ceps []string) ([]Address, error) {
 	addresses := make([]Address, 0, len(ceps))
 	for _, v := range ceps {
-		address, err := BuscaCEP(v)
+		address, err := BuscaCEP(v, client)
 		if err != nil {
 			return addresses, err
 		}
@@ -78,15 +90,25 @@ func BuscaVarios(ctx context.Context, ceps []string) ([]Address, error) {
 }
 
 func main() {
-	address, err := BuscaCEP("01001000")
-	if err != nil {
-		log.Fatalf("Error: %s", err.Error())
+	client := &http.Client{
+		Timeout: 10 * time.Second,
 	}
-	fmt.Println("Address:", address)
 
-	addresses, err := BuscaVarios(context.TODO(), []string{"08780170", "08710190"})
+	address, err := BuscaCEP("01001000", *client)
 	if err != nil {
 		log.Fatalf("Error: %s", err.Error())
 	}
-	fmt.Println("Addresses:", addresses)
+	address.Print()
+
+	addresses, err := BuscaVarios(context.TODO(), *client, []string{"08780170", "08710190"})
+	if err != nil {
+		log.Fatalf("Error: %s", err.Error())
+	}
+
+	fmt.Println()
+
+	for _, v := range addresses {
+		v.Print()
+		fmt.Println()
+	}
 }
